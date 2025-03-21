@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@types/express": "^5.0.1",
+    "@types/sequelize": "^4.28.20",
+    "express": "^4.21.2",
+    "sequelize": "^6.37.6",
+    "typescript": "^5.8.2"
+  }
+}
