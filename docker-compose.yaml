@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: moneyflow
+      POSTGRES_PASSWORD: moneyflow_password
+      POSTGRES_DB: moneyflow_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    restart: always 
+
+volumes:
+  db_data:
