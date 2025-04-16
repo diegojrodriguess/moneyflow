@@ -6,7 +6,7 @@ const sequelize = new Sequelize({
   database: 'moneyflow_db',
   username: 'moneyflow',
   password: 'moneyflow_password',
-  host: 'db',
+  host: 'localhost',
   dialect: 'postgres',
   port: 5432,
   models: [User, Transaction],
