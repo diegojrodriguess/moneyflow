@@ -1,14 +1,15 @@
-import { Model, DataType ,Column, Table } from "sequelize-typescript";
+import { Model, DataType, Column, Table, HasMany, Sequelize } from "sequelize-typescript";
+import { Transaction } from "./Transaction";
 
 @Table({
   tableName: 'users',
   timestamps: true,
 })
-export class User extends Model{
+export class User extends Model {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey: true, 
+    primaryKey: true,
   })
   id!: number;
 
@@ -33,12 +34,17 @@ export class User extends Model{
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    defaultValue: DataType.NOW,
   })
   created_at!: Date;
 
   @Column({
     type: DataType.DATE,
     allowNull: false,
+    defaultValue: DataType.NOW,
   })
   updated_at!: Date;
+
+  @HasMany(() => Transaction)
+  transactions!: Transaction[];
 }

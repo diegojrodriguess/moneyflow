@@ -1,25 +1,26 @@
-import { Model, DataType ,Column, Table } from "sequelize-typescript";
+import { Model, DataType, Column, Table, ForeignKey, Sequelize } from "sequelize-typescript";
+import { User } from "./User";
 
 @Table({
     tableName: 'transactions',
     timestamps: true,
-  })
-export class Transaction extends Model{
+})
+export class Transaction extends Model {
     @Column({
         type: DataType.INTEGER,
         autoIncrement: true,
-        primaryKey: true, 
+        primaryKey: true,
     })
     id!: number;
-    
+
     @Column({
         type: DataType.FLOAT,
         allowNull: false,
     })
     amount!: number;
-    
+
     @Column({
-        type: DataType.ENUM,
+        type: DataType.ENUM('INCOME', 'EXPENSE'),
         allowNull: false,
     })
     type!: 'INCOME' | 'EXPENSE';
@@ -28,17 +29,26 @@ export class Transaction extends Model{
         type: DataType.STRING,
         allowNull: false,
     })
-    description!: string;   
-    
+    description!: string;
+
+    @ForeignKey(() => User)
     @Column({
-        type: DataType.DATE,
+        type: DataType.INTEGER,
         allowNull: false,
     })
-    created_at!: Date;
-    
+    userId!: number;
+
     @Column({
         type: DataType.DATE,
         allowNull: false,
+        defaultValue: DataType.NOW,
+    })
+    created_at!: Date;
+
+    @Column({
+        type: DataType.DATE,
+        allowNull: false,
+        defaultValue: DataType.NOW,
     })
     updated_at!: Date;
 }
