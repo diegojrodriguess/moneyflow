@@ -4,27 +4,27 @@ import { User } from '../models/User';
 export class UserService {
     constructor(private userRepository: UserRepository) {}
 
-    static async createUser(data: Partial<User>): Promise<User> {
-        return await UserRepository.createUser(data);
+    async createUser(data: Partial<User>): Promise<User> {
+        return await this.userRepository.createUser(data);
     }
 
-    static async getUserById(id: number): Promise<User | null> {
-        return await UserRepository.findUserById(id);
+    async getUserById(id: number): Promise<User | null> {
+        return await this.userRepository.findUserById(id);
     }
 
-    static async getUserByEmail(email: string): Promise<User | null> {
-        return await UserRepository.findUserByEmail(email);
+    async getUserByEmail(email: string): Promise<User | null> {
+        return await this.userRepository.findUserByEmail(email);
     }
 
-    static async updateUser(id: number, data: Partial<User>): Promise<[number, User[]]> {
-        return await UserRepository.updateUser(id, data);
+    async updateUser(id: number, data: Partial<User>): Promise<[number, User[]]> {
+        return await this.userRepository.updateUser(id, data);
     }
 
-    static async deleteUser(id: number): Promise<number> {
-        return await UserRepository.deleteUser(id);
+    async deleteUser(id: number): Promise<number> {
+        return await this.userRepository.deleteUser(id);
     }
 
-    static async getAllUsers(filter: Partial<User> = {}): Promise<User[]> {
-        return await UserRepository.findAllUsers(filter);
+    async getAllUsers(filter: Partial<User> = {}): Promise<User[]> {
+        return await this.userRepository.findAllUsers(filter);
     }
 }

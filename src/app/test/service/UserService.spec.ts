@@ -3,38 +3,97 @@ import { User } from '../../models/User';
 import { UserRepository } from '../../repositories/UserRepository';
 import { UserService } from '../../service/UserService';
 
-jest.mock('../../repositories/UserRepository'); // Mock the repository
+const userRepository = require('../../repositories/UserRepository');
 
-describe('Testing User service', () => {
+jest.mock('../../repositories/UserRepository', () => {
+    return {
+        UserRepository: jest.fn().mockImplementation(() => {
+            return {
+                createUser: jest.fn(),
+                findUserById: jest.fn(),
+                findUserByEmail: jest.fn(),
+                updateUser: jest.fn(),
+                deleteUser: jest.fn(),
+                findAllUsers: jest.fn(),
+            };
+        }),
+    };
+});
+describe('UserService', () => {
+    let userService: UserService;
+    let userRepositoryMock: jest.Mocked<UserRepository>;
+
     beforeAll(() => {
-        jest.clearAllMocks(); // Clear mocks before each test
+        userRepositoryMock = new userRepository.UserRepository() as jest.Mocked<UserRepository>;
+        userService = new UserService(userRepositoryMock);
     });
 
-    describe('Create user', () => {
-        it('should create a user successfully', async () => {
-            const mockUser: Partial<User> = { name: 'Diego', email: 'diego@teste.com', password: '123456' };
-            jest.spyOn(UserRepository, 'createUser').mockResolvedValue(mockUser as User);
+    it('should create a user', async () => {
+        const userData = { name: 'Diego', email: 'diego@gmail.com', password:'123456' } as User;
 
-            const result = await UserService.createUser({
-                name: 'Diego',
-                email: 'diego@teste.com',
-                password: '123456',
-            });
+        userRepositoryMock.createUser.mockResolvedValue(userData);
+        const result = await userService.createUser(userData);
 
-            // Assert: Verify the repository was called and the result is correct
-            expect(UserRepository.createUser).toHaveBeenCalledWith({
-                name: 'Diego',
-                email: 'diego@teste.com',
-                password: '123456',
-            });
-            expect(result).toEqual(mockUser);
-        });
+        expect(userRepositoryMock.createUser).toHaveBeenCalledWith(userData);
+        expect(result).toEqual(userData);
+    });
 
-        it('should throw an error if user creation fails', async () => {
-            jest.spyOn(UserRepository, 'createUser').mockRejectedValue(new Error('Creation failed'));
+    it('should get a user by ID', async () => {
+        const userId = 1;
+        const userData = { id: userId, name: 'Diego', email: 'diego@gmail.com', password:'123456' } as User;
 
-            await expect(UserService.createUser({})).rejects.toThrow('Creation failed');
-        });
+        userRepositoryMock.findUserById.mockResolvedValue(userData);
+        const result = await userService.getUserById(userId);
+
+        expect(result).toEqual(userData);
+        expect(userRepositoryMock.findUserById).toHaveBeenCalledWith(userId);
+    });
+
+    it('should get a user by email', async () => {
+        const userEmail = 'diego@gmail.com';
+        const userData = { id: 1, name: 'Diego', email: userEmail, password:'123456' } as User;
+
+        userRepositoryMock.findUserByEmail.mockResolvedValue(userData);
+        const result = await userService.getUserByEmail(userEmail);
+
+        expect(result).toEqual(userData);
+        expect(userRepositoryMock.findUserByEmail).toHaveBeenCalledWith(userEmail);
+    });
+
+    it('should update a user', async () => {
+        const userId = 1;
+        const userData = { id: userId, name: 'Diego', email: 'diego@gmail.com', password:'123456' } as User;
+
+        const updatedData = { name: 'Diego Updated' };
+
+        userRepositoryMock.updateUser.mockResolvedValue([1, [userData]]);
+        const result = await userService.updateUser(userId, updatedData);
+
+        expect(result).toEqual([1, [userData]]);
+        expect(userRepositoryMock.updateUser).toHaveBeenCalledWith(userId, updatedData);
+    });
+
+    it('should delete a user', async () => {
+        const userId = 1;
+
+        userRepositoryMock.deleteUser.mockResolvedValue(1);
+        const result = await userService.deleteUser(userId);
+
+        expect(result).toEqual(1);
+        expect(userRepositoryMock.deleteUser).toHaveBeenCalledWith(userId);
+    });
+
+    it('should get all users', async () => {
+        const userData = [
+            { id: 1, name: 'Diego', email: 'diego@gmail.com', password:'123456' },
+            { id: 2, name: 'John', email: 'john@gmail.com', password:'123456' },
+        ] as User[];
+
+        userRepositoryMock.findAllUsers.mockResolvedValue(userData);
+        const result = await userService.getAllUsers();
+
+        expect(result).toEqual(userData);
+        expect(userRepositoryMock.findAllUsers).toHaveBeenCalledWith({});
     });
 });
 
