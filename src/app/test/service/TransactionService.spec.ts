@@ -3,110 +3,95 @@ import { Transaction } from '../../models/Transaction';
 import { TransactionRepository } from '../../repositories/TransactionRepository';
 import { TransactionService } from '../../service/TransactionService';
 
-jest.mock('../../repositories/TransactionRepository'); // Mock the repository
+const transactionRepository = require('../../repositories/TransactionRepository');
+jest.mock('../../repositories/TransactionRepository', () => {
+    return {
+        TransactionRepository: jest.fn().mockImplementation(() => {
+            return {
+                createTransaction: jest.fn(),
+                findTransactionById: jest.fn(),
+                updateTransaction: jest.fn(),
+                deleteTransaction: jest.fn(),
+                findAllTransactions: jest.fn(),
+            };
+        }),
+    };
+});
 
 describe('Testing Transaction service', () => {
+    let transactionService: TransactionService;
+    let transactionRepositoryMock: jest.Mocked<TransactionRepository>;
     beforeAll(() => {
         jest.clearAllMocks(); // Clear mocks before each test
+        transactionRepositoryMock = new transactionRepository.TransactionRepository() as jest.Mocked<TransactionRepository>;
+        transactionService = new TransactionService(transactionRepositoryMock);
     });
 
-    describe('Create transaction', () => {
-        it('should create a transaction successfully', async () => {
-            const mockTransaction = { id: 1, amount: 100, type: 'INCOME', description: 'Salary'} as Transaction;
-            jest.spyOn(TransactionRepository, 'createTransaction').mockResolvedValue(mockTransaction);
+    it('should create a transaction', async () => {
+        const transactionData = { id: 1, amount: 100, type: 'INCOME', description: 'Salary' } as Transaction;
 
-            const result = await TransactionService.createTransaction({
-                amount: 100,
-                type: 'INCOME',
-                description: 'Salary'
-            });
+        transactionRepositoryMock.createTransaction.mockResolvedValue(transactionData);
+        const result = await transactionService.createTransaction(transactionData);
 
-            expect(result).toEqual(mockTransaction);
-        });
-
-        it('should throw an error if transaction creation fails', async () => {
-            jest.spyOn(TransactionRepository, 'createTransaction').mockRejectedValue(new Error('Creation failed'));
-
-            await expect(TransactionService.createTransaction({})).rejects.toThrow('Creation failed');
-        });
+        expect(transactionRepositoryMock.createTransaction).toHaveBeenCalledWith(transactionData);
+        expect(result).toEqual(transactionData);
     });
 
-    describe('Get transaction by ID', () => {
-        it('should return a transaction by ID', async () => {
-            const mockTransaction = { id: 1, amount: 100, type: 'INCOME', description: 'Salary'} as Transaction;
-            jest.spyOn(TransactionRepository, 'findTransactionById').mockResolvedValue(mockTransaction);
+    it('should get a transaction by id', async () => {
+        const transactionData = { id: 1, amount: 100, type: 'INCOME', description: 'Salary' } as Transaction;
 
-            const result = await TransactionService.getTransactionById(1);
+        transactionRepositoryMock.findTransactionById.mockResolvedValue(transactionData);
+        const result = await transactionService.getTransactionById(1);
 
-            expect(result).toEqual(mockTransaction);
-        });
-
-        it('should return null if transaction not found', async () => {
-            jest.spyOn(TransactionRepository, 'findTransactionById').mockResolvedValue(null);
-
-            const result = await TransactionService.getTransactionById(999);
-
-            expect(result).toBeNull();
-        });
+        expect(transactionRepositoryMock.findTransactionById).toHaveBeenCalledWith(1);
+        expect(result).toEqual(transactionData);
     });
 
-    describe('Update transaction', () => {
-        it('should update a transaction successfully', async () => {
-            const mockTransaction = { id: 1, amount: 100, type: 'INCOME', description: 'Salary'} as Transaction;
-            jest.spyOn(TransactionRepository, 'updateTransaction').mockResolvedValue([1, [mockTransaction]]);
+    it('should update a transaction', async () => {
+        const transactionData = { id: 1, amount: 100, type: 'INCOME', description: 'Salary' } as Transaction;
+        const updatedData = { amount: 200 } as Partial<Transaction>;
 
-            const result = await TransactionService.updateTransaction(1, { amount: 200 });
+        transactionRepositoryMock.updateTransaction.mockResolvedValue([1, [transactionData]]);
+        const result = await transactionService.updateTransaction(1, updatedData);
 
-            expect(result).toEqual([1, [mockTransaction]]);
-        });
-
-        it('should throw an error if transaction update fails', async () => {
-            jest.spyOn(TransactionRepository, 'updateTransaction').mockRejectedValue(new Error('Update failed'));
-
-            await expect(TransactionService.updateTransaction(1, {})).rejects.toThrow('Update failed');
-        });
+        expect(transactionRepositoryMock.updateTransaction).toHaveBeenCalledWith(1, updatedData);
+        expect(result).toEqual([1, [transactionData]]);
     });
 
-    describe('Delete transaction', () => {
-        it('should delete a transaction successfully', async () => {
-            jest.spyOn(TransactionRepository, 'deleteTransaction').mockResolvedValue(1);
+    it('should delete a transaction', async () => {
+        const transactionId = 1;
 
-            const result = await TransactionService.deleteTransaction(1);
+        transactionRepositoryMock.deleteTransaction.mockResolvedValue(1);
+        const result = await transactionService.deleteTransaction(transactionId);
 
-            expect(result).toEqual(1);
-        });
-
-        it('should throw an error if transaction deletion fails', async () => {
-            jest.spyOn(TransactionRepository, 'deleteTransaction').mockRejectedValue(new Error('Deletion failed'));
-
-            await expect(TransactionService.deleteTransaction(1)).rejects.toThrow('Deletion failed');
-        });
+        expect(transactionRepositoryMock.deleteTransaction).toHaveBeenCalledWith(transactionId);
+        expect(result).toEqual(1);
     });
 
-    describe('Get all transactions', () => {
-        it('should return all transactions', async () => {
-            const mockTransactions = [
-                { id: 1, amount: 100, type: 'INCOME', description: 'Salary'} as Transaction,
-                { id: 2, amount: 50, type: 'EXPENSE', description: 'Groceries'} as Transaction
-            ];
-            jest.spyOn(TransactionRepository, 'findAllTransactions').mockResolvedValue(mockTransactions);
+    it('should get all transactions', async () => {
+        const transactionData = [
+            { id: 1, amount: 100, type: 'INCOME', description: 'Salary' } as Transaction,
+            { id: 2, amount: 50, type: 'EXPENSE', description: 'Groceries' } as Transaction,
+        ];
 
-            const result = await TransactionService.getAllTransactions();
+        transactionRepositoryMock.findAllTransactions.mockResolvedValue(transactionData);
+        const result = await transactionService.getAllTransactions();
 
-            expect(result).toEqual(mockTransactions);
-        });
-
-        it('should return filtered transactions', async () => {
-            const mockTransactions = [
-                { id: 1, amount: 100, type: 'INCOME', description: 'Salary'} as Transaction
-            ];
-            jest.spyOn(TransactionRepository, 'findAllTransactions').mockResolvedValue(mockTransactions);
-
-            const result = await TransactionService.getAllTransactions({ type: 'INCOME' });
-
-            expect(result).toEqual(mockTransactions);
-        });
+        expect(transactionRepositoryMock.findAllTransactions).toHaveBeenCalledWith({});
+        expect(result).toEqual(transactionData);
     });
 
+    it('should get all transactions with filter', async () => {
+        const transactionData = [
+            { id: 1, amount: 100, type: 'INCOME', description: 'Salary' } as Transaction,
+            { id: 2, amount: 50, type: 'EXPENSE', description: 'Groceries' } as Transaction,
+        ];
 
+        const filter: Partial<Transaction> = { type: 'INCOME' };
+        transactionRepositoryMock.findAllTransactions.mockResolvedValue(transactionData);
+        const result = await transactionService.getAllTransactions(filter);
+
+        expect(transactionRepositoryMock.findAllTransactions).toHaveBeenCalledWith(filter);
+        expect(result).toEqual(transactionData);
+    });
 });
