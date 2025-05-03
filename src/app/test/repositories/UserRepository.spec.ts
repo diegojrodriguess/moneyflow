@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeAll, jest } from '@jest/globals';
+import { describe, expect, beforeAll, jest } from '@jest/globals';
 import { User } from '../../models/User';
 import { UserRepository } from '../../repositories/UserRepository';
 
@@ -103,15 +103,21 @@ describe('Testing User repository', () => {
 
     describe('Find all users with filter', () => {
         it('should find all users with filter', async () => {
-            const mockUser = { id: 1, name: 'Diego', email: 'diego@gmail.com'};
-            const mockUser2 = { id: 2, name: 'Lucas', email: 'lucas@gmail.com'};
-            const mockUser3 = { id: 3, name: 'João', email: 'joao@inatel.br'};
+            const mockedUsers = [
+                { id: 1, name: 'Diego', email: 'diego@gmail.com'},
+                { id: 2, name: 'Lucas', email: 'lucas@gmail.com'},
+                { id: 3, name: 'João', email: 'joao@inatel.br'}
+            ];
 
             const filter = { name: 'Diego' };
-            jest.spyOn(User, 'findAll').mockResolvedValue([mockUser, mockUser2, mockUser3] as any);
+
+            jest.spyOn(User, 'findAll').mockResolvedValue(mockedUsers as any);
+
             const result = await UserRepository.findAllUsers(filter);
+
+
             expect(User.findAll).toHaveBeenCalledWith({ where: { ...filter } });
-            expect(result).toEqual([mockUser]);
+            expect(result).toEqual(mockedUsers);
         });
     }
     );
