@@ -2,14 +2,9 @@ import { Sequelize } from 'sequelize-typescript';
 import { User } from '../models/User';
 import { Transaction } from '../models/Transaction';
 
-const sequelize = new Sequelize({
-  database: 'moneyflow_db',
-  username: 'moneyflow',
-  password: 'moneyflow_password',
-  host: 'localhost',
+const sequelize = new Sequelize('postgres://moneyflow:moneyflow_password@localhost:5434/moneyflow_db', {
   dialect: 'postgres',
-  port: 5432,
-  models: [User, Transaction],
+  models: [User, Transaction]
 });
 
 export default sequelize;
