@@ -1,5 +1,6 @@
 import express from 'express';
 import userRoutes from './routes/user.router';
+import transactionRoutes from './routes/transaction.router';
 import sequelize from './database/database';
 
 const app = express();
@@ -8,6 +9,7 @@ app.use(express.json());
 
 // Rotas
 app.use('/users', userRoutes);
+app.use('/transactions', transactionRoutes);
 
 sequelize.authenticate()
   .then(() => {
